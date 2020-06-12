@@ -17,7 +17,7 @@ namespace u3devtools.sloot
             Debug.Log("Help!");
         }
 
-        [MenuItem("Sloot/Test")]
+        [MenuItem("Sloot/Assets/Test")]
         public static void Test()
         {
             // foreach (var item in AssetDatabase.GetAssetPathsFromAssetBundle("common"))
@@ -28,16 +28,28 @@ namespace u3devtools.sloot
             // {
             //     Debug.Log(AssetDatabase.GUIDToAssetPath(item));
             // }
-            foreach (var item in AssetDatabase.GetAllAssetPaths())
+            foreach (string item in AssetDatabase.GetAllAssetPaths())
             {
                 // item.Split({ "Bundles" }, StringSplitOptions);
                 // if (1 < item.Length)
                 // {
-                Debug.Log(item);
+                if (item.StartsWith("Assets/Bundles"))
+                {
+                    Debug.Log(item);
+                    foreach (string dep in AssetDatabase.GetDependencies(item))
+                    {
+                        Debug.Log(dep);
+                    }
+                }
                 // }
             }
-            AssetImporter ai = AssetImporter.GetAtPath("Assets/Bundles/common/logo-result2x.png");
-            ai.SetAssetBundleNameAndVariant("abc", "");
+
+            foreach (string item in AssetDatabase.GetAllAssetBundleNames())
+            {
+                Debug.Log(item);
+            }
+            // AssetImporter ai = AssetImporter.GetAtPath("Assets/Bundles/common/logo-result2x.png");
+            // ai.SetAssetBundleNameAndVariant("abc", "");
         }
     }
 }

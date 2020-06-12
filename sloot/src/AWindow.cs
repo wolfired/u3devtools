@@ -10,5 +10,10 @@ namespace u3devtools.sloot
         {
             EditorWindow.GetWindow(typeof(AWindow));
         }
+
+        public void onGui()
+        {
+
+        }
     }
 }

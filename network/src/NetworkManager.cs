@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace u3devtools.network
 {
-    class NetworkManager
+    public class NetworkManager
     {
         private static NetworkManager _ins;
 
@@ -22,6 +22,11 @@ namespace u3devtools.network
         private NetworkManager()
         {
 
+        }
+
+        public void connect(string ip, string port)
+        {
+            Debug.Log(String.Format("network connect {0}:{1}", ip, port));
         }
     }
 }
