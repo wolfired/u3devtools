@@ -20,14 +20,19 @@ namespace u3devtools.logger
     public class LoggerManager
     {
         private LogLevel _min_log_level;
+        private bool _need_stack_track;
         private readonly object _locker;
         private readonly StreamWriter _sw;
         private List<string> _waiting_logs;
         private List<string> _writing_logs;
 
-        public LoggerManager(string log_file, LogLevel min_log_level = LogLevel.WARN)
+        private readonly string _padding;
+
+        public LoggerManager(string log_file, LogLevel min_log_level = LogLevel.WARN, bool need_stack_track = false)
         {
             _min_log_level = min_log_level;
+
+            _need_stack_track = need_stack_track;
 
             _locker = new object();
 
@@ -35,6 +40,8 @@ namespace u3devtools.logger
 
             _waiting_logs = new List<string>();
             _writing_logs = new List<string>();
+
+            _padding = String.Format("\n{0,14}[Stack Track]", "");
 
             Application.logMessageReceived += onLogMessageReceived;
         }
@@ -140,8 +147,14 @@ namespace u3devtools.logger
                     log_level = LogLevel.ERROR;
                     break;
             }
-            string padding = String.Format("\n{0,14}[Stack Track]", "");
-            this.log(log_level, String.Format("{0}{1}{2}", log, padding, stack_track.Trim().Replace("\n", padding)));
+            if (_need_stack_track)
+            {
+                this.log(log_level, String.Format("{0}{1}{2}", log, _padding, stack_track.Trim().Replace("\n", _padding)));
+            }
+            else
+            {
+                this.log(log_level, log);
+            }
         }
     }
 }
