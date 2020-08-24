@@ -1,8 +1,8 @@
-/.vs/
-/.vscode/
-/*/bin/
-/*/obj/
-/*/Properties/
-/*/*.csproj
-/*/*.csproj.user
-/*.sln
+.vs/
+.vscode/
+[Bb]in/
+[Oo]bj/
+[Pp]roperties/
+*.csproj
+*.csproj.user
+*.sln
