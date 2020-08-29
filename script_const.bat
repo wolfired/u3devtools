@@ -13,11 +13,13 @@ set SLN_BIN=%SLN_PATH%\bin
 :: 解决方案编译模式
 set SLN_CONFIGURATION=Debug
 
+
 :: 辅助工具项目
 set PRJ_NAME_UTILS=utils
 set PRJ_PATH_UTILS=%SLN_PATH%\%PRJ_NAME_UTILS%
 :: 编译完成后自动部署目录
 set PRJ_PATH_COPYTO_UTILS=E:\workspace_u3d\u3devtools\Assets\Plugins
+
 
 :: 美术资源导入自动化处理项目
 set PRJ_NAME_ARTIST=artist
@@ -25,8 +27,16 @@ set PRJ_PATH_ARTIST=%SLN_PATH%\%PRJ_NAME_ARTIST%
 :: 编译完成后自动部署目录
 set PRJ_PATH_COPYTO_ARTIST=E:\workspace_u3d\u3devtools\Assets\Editor\Plugins
 
+
 :: 示例项目
 set PRJ_NAME_SAMPLE=sample
 set PRJ_PATH_SAMPLE=%SLN_PATH%\%PRJ_NAME_SAMPLE%
 :: 编译完成后自动部署目录
 set PRJ_PATH_COPYTO_SAMPLE=
+
+
+:: xls配置表生成对应的lua类型定义
+set PRJ_NAME_XLS2LUA=xls2lua
+set PRJ_PATH_XLS2LUA=%SLN_PATH%\%PRJ_NAME_XLS2LUA%
+:: 编译完成后自动部署目录
+set PRJ_PATH_COPYTO_XLS2LUA=
