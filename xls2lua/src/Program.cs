@@ -5,15 +5,48 @@ using System.IO;
 using System.Text;
 using ExcelDataReader;
 using Mono.Options;
+using System.IO.Compression;
+using System.Xml.Serialization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace xls2lua
 {
+    [XmlRoot("worksheet")]
+    public class Worksheet
+    {
+        [XmlRoot("dataValidations")]
+        public class DataValidations
+        {
+            [XmlAttribute("count")]
+            public int count;
+
+            [XmlElement("dataValidation")]
+            public DataValidation[] dataValidation;
+        }
+
+        [XmlRoot("dataValidation")]
+        public class DataValidation : IComparable<DataValidation>
+        {
+            [XmlAttribute("prompt")]
+            public string prompt;
+            [XmlAttribute("sqref")]
+            public string sqref;
+
+            public int CompareTo([AllowNull] DataValidation other)
+            {
+                return this.sqref[0] < other.sqref[0] ? -1 : 1;
+            }
+        }
+
+        [XmlElement("dataValidations")]
+        public DataValidations dataValidations;
+    }
     class Program
     {
         static Dictionary<string, string> type_map = new Dictionary<string, string>();
         static bool args_help = false;
         static string search_path = null;
-        static string search_pattern = "*.xls";
+        static string search_pattern = "*.xlsx";
         static string file_out = null;
         static List<string> blacklist = new List<string>();
         static List<string> whitelist = new List<string>();
@@ -23,7 +56,7 @@ namespace xls2lua
             var options = new OptionSet {
                 { "h|help", "show this message and exit", h => args_help = h != null },
                 { "search_path=", "搜索路径",  s => search_path = s },
-                { "search_pattern=", "搜索模式, 默认值: \"*.xls\"",  s => search_pattern = s },
+                { "search_pattern=", "搜索模式, 默认值: \"*.xlsx\"",  s => search_pattern = s },
                 { "file_out=", "输出文件",  s => file_out = s },
                 { "blacklist=", "黑名单, 表名",  s => blacklist.Add(s) },
                 { "whitelist=", "白名单, 表名",  s => whitelist.Add(s) },
@@ -52,7 +85,7 @@ namespace xls2lua
                 return;
             }
 
-            if (null == file_out || "" == file_out || !File.Exists(file_out))
+            if (null == file_out || "" == file_out)
             {
                 Console.WriteLine("Oops...请指定正确的输出文件\n\n");
                 return;
@@ -67,17 +100,47 @@ namespace xls2lua
 
             StringBuilder sb = new StringBuilder();
 
+            string[] comments;
+
             string[] files = Directory.GetFiles(search_path, search_pattern, SearchOption.TopDirectoryOnly);
 
             foreach (string file in files)
             {
-                GenConfigType(file, sb);
+                string tmp_path = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(file));
+
+                // Console.WriteLine(tmp_path);
+
+                ZipFile.ExtractToDirectory(file, tmp_path, true);
+                FileStream fs = File.Open(Path.Combine(tmp_path, "xl", "worksheets", "sheet2.xml"), FileMode.Open);
+                using (StreamReader sr = new StreamReader(fs, Encoding.UTF8))
+                {
+                    XmlSerializer xz = new XmlSerializer(typeof(Worksheet), "http://schemas.openxmlformats.org/spreadsheetml/2006/main");
+                    Worksheet dept = (Worksheet)xz.Deserialize(sr);
+
+                    comments = new string[26];
+
+                    if (null != dept.dataValidations && null != dept.dataValidations.dataValidation)
+                    {
+                        Array.Sort<Worksheet.DataValidation>(dept.dataValidations.dataValidation);
+
+                        foreach (var dv in dept.dataValidations.dataValidation)
+                        {
+                            // Console.WriteLine("\n" + dv.sqref + "\n" + dv.prompt.Replace('\n', ' ').Replace('\r', ' ') + "\n");
+                            comments[dv.sqref[0] - 'A'] = dv.prompt.Replace('\n', ' ').Replace('\r', ' ');
+                        }
+                    }
+
+                }
+
+                GenConfigType(file, sb, comments);
+
+                Directory.Delete(tmp_path, true);
             }
 
             File.WriteAllText(file_out, sb.ToString());
         }
 
-        static void GenConfigType(string xls_file, StringBuilder sb)
+        static void GenConfigType(string xls_file, StringBuilder sb, string[] comments)
         {
             using (var stream = File.Open(xls_file, FileMode.Open, FileAccess.Read))
             {
@@ -124,7 +187,9 @@ namespace xls2lua
                         string type_str;
                         if (type_map.TryGetValue(fts[i], out type_str))
                         {
-                            sb.AppendLine("---@field " + fns[i] + " " + type_str);
+                            string comment = comments[i];
+                            comment = null == comment || "".Equals(comment) ? "" : " @" + comment;
+                            sb.AppendLine("---@field " + fns[i] + " " + type_str + comment);
                         }
                         else
                         {
@@ -132,8 +197,10 @@ namespace xls2lua
                             {
                                 List<string> keys = new List<string>();
                                 List<string> values = new List<string>();
+                                List<string> etc_comments = new List<string>();
                                 GetValuesAt(result.Tables[1], 3, 0, keys);
                                 GetValuesAt(result.Tables[1], 3, 1, values);
+                                GetValuesAt(result.Tables[1], 3, 2, etc_comments);
 
                                 int l = keys.Count;
 
@@ -166,7 +233,10 @@ namespace xls2lua
                                         value_type = "string";
                                     }
 
-                                    sb.AppendLine("---@field " + keys[j] + " " + "{ " + GetValuesAt(result.Tables[1], 2, 1, new List<string>())[0] + ": " + value_type + " }");
+                                    string comment = etc_comments[j];
+                                    comment = null == comment || "".Equals(comment) ? "" : " @" + comment;
+
+                                    sb.AppendLine("---@field " + keys[j] + " " + "{ " + GetValuesAt(result.Tables[1], 2, 1, new List<string>())[0] + ": " + value_type + " }" + comment);
                                 }
 
                                 continue;

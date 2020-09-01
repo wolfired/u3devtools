@@ -49,5 +49,6 @@ dotnet add %PRJ_PATH_XLS2LUA% package ExcelDataReader
 dotnet add %PRJ_PATH_XLS2LUA% package ExcelNumberFormat
 dotnet add %PRJ_PATH_XLS2LUA% package ExcelDataReader.DataSet
 dotnet add %PRJ_PATH_XLS2LUA% package System.Text.Encoding.CodePages
+dotnet add %PRJ_PATH_XLS2LUA% package System.IO.Compression.ZipFile
 dotnet add %PRJ_PATH_XLS2LUA% package Mono.Options
 dotnet sln %SLN_PATH% add %PRJ_PATH_XLS2LUA%
