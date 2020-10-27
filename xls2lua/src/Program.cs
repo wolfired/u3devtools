@@ -126,7 +126,15 @@ namespace xls2lua
                         foreach (var dv in dept.dataValidations.dataValidation)
                         {
                             // Console.WriteLine("\n" + dv.sqref + "\n" + dv.prompt.Replace('\n', ' ').Replace('\r', ' ') + "\n");
-                            comments[dv.sqref[0] - 'A'] = dv.prompt.Replace('\n', ' ').Replace('\r', ' ');
+
+                            if (null == dv.prompt || "" == dv.prompt)
+                            {
+                                comments[dv.sqref[0] - 'A'] = "";
+                            }
+                            else
+                            {
+                                comments[dv.sqref[0] - 'A'] = dv.prompt.Replace('\n', ' ').Replace('\r', ' ');
+                            }
                         }
                     }
 
