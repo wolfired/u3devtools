@@ -58,8 +58,8 @@ namespace xls2lua
                 { "search_path=", "搜索路径",  s => search_path = s },
                 { "search_pattern=", "搜索模式, 默认值: \"*.xlsx\"",  s => search_pattern = s },
                 { "file_out=", "输出文件",  s => file_out = s },
-                { "blacklist=", "黑名单, 表名",  s => blacklist.Add(s) },
-                { "whitelist=", "白名单, 表名",  s => whitelist.Add(s) },
+                { "blacklist=", "黑名单, 表名, 逗号分隔",  s => blacklist.AddRange(s.Split(",")) },
+                { "whitelist=", "白名单, 表名, 逗号分隔",  s => whitelist.AddRange(s.Split(",")) },
             };
             List<string> extra;
             try
@@ -97,6 +97,7 @@ namespace xls2lua
             type_map.Add("str", "string");
             type_map.Add("bool", "boolean");
             type_map.Add("list", "table");
+            type_map.Add("raw", "table");
 
             StringBuilder sb = new StringBuilder();
 
