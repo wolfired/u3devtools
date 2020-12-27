@@ -305,8 +305,8 @@ namespace xls2lua
                     }
                     catch (System.Exception)
                     {
-                        Console.WriteLine("解析错误: " + table.TableName);
-                        throw;
+                        Console.WriteLine("解析错误: " + table.TableName + ", 使用默认值");
+                        result.Add(0);
                     }
                 }
             }
