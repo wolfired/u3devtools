@@ -118,7 +118,7 @@ namespace xls2lua
                     XmlSerializer xz = new XmlSerializer(typeof(Worksheet), "http://schemas.openxmlformats.org/spreadsheetml/2006/main");
                     Worksheet dept = (Worksheet)xz.Deserialize(sr);
 
-                    comments = new string[26];
+                    comments = new string[64];
 
                     if (null != dept.dataValidations && null != dept.dataValidations.dataValidation)
                     {
@@ -303,10 +303,17 @@ namespace xls2lua
                     {
                         result.Add(int.Parse(value.ToString()));
                     }
-                    catch (System.Exception)
+                    catch (System.Exception e)
                     {
-                        Console.WriteLine("解析错误: " + table.TableName + ", 使用默认值");
-                        result.Add(0);
+                        if (0 == r)
+                        {
+                            result.Add(0);
+                        }
+                        else
+                        {
+                            Console.WriteLine("解析错误: " + table.TableName + ", 第" + r + "行, 第" + c + "列, 使用默认值");
+                            throw e;
+                        }
                     }
                 }
             }
