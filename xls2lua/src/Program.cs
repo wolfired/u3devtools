@@ -244,6 +244,7 @@ namespace xls2lua
 
                                     string comment = etc_comments[j];
                                     comment = null == comment || "".Equals(comment) ? "" : " @" + comment;
+                                    comment = comment.Replace('\n', ' ').Replace('\r', ' ');
 
                                     sb.AppendLine("---@field " + keys[j] + " " + "{ " + GetValuesAt(result.Tables[1], 2, 1, new List<string>())[0] + ": " + value_type + " }" + comment);
                                 }
