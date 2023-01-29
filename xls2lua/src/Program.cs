@@ -50,6 +50,7 @@ namespace xls2lua
         static string file_out = null!;
         static List<string> blacklist = new List<string>();
         static List<string> whitelist = new List<string>();
+        static List<string> kvclist = new List<string>();
 
         static void Main(string[] args)
         {
@@ -60,6 +61,7 @@ namespace xls2lua
                 { "file_out=", "输出文件",  s => file_out = s },
                 { "blacklist=", "黑名单, 表名, 逗号分隔",  s => blacklist.AddRange(s.Split(",")) },
                 { "whitelist=", "白名单, 表名, 逗号分隔",  s => whitelist.AddRange(s.Split(",")) },
+                { "kvclist=", "键-值-注释格式配置, 目前只有杂项表(f_etc.lua)",  s => kvclist.AddRange(s.Split(",")) },
             };
             List<string> extra;
             try
@@ -95,6 +97,7 @@ namespace xls2lua
 
             type_map.Add("int", "number");
             type_map.Add("str", "string");
+            type_map.Add("atom", "string");
             type_map.Add("bool", "boolean");
             type_map.Add("list", "table");
             type_map.Add("raw", "table");
@@ -168,6 +171,56 @@ namespace xls2lua
                         return;
                     }
 
+                    if (kvclist.Contains(cfg_name))
+                    {
+                        List<string> kvc_keys = new List<string>();
+                        List<string> kvc_values = new List<string>();
+                        List<string> kvc_comments = new List<string>();
+                        GetValuesAt(result.Tables[1], 3, 0, kvc_keys);
+                        GetValuesAt(result.Tables[1], 3, 1, kvc_values);
+                        GetValuesAt(result.Tables[1], 3, 2, kvc_comments);
+
+                        int l = kvc_keys.Count;
+
+                        for (int j = 0; j < l; j++)
+                        {
+                            if ("" == kvc_keys[j] || "" == kvc_values[j])
+                            {
+                                continue;
+                            }
+
+                            bool out_bool;
+                            int out_int;
+                            float out_float;
+
+                            string value_type = "table";
+                            if ("" == kvc_values[j] || kvc_values[j].Contains(','))
+                            {
+                                value_type = "table";
+                            }
+                            else if (bool.TryParse(kvc_values[j], out out_bool))
+                            {
+                                value_type = "boolean";
+                            }
+                            else if (int.TryParse(kvc_values[j], out out_int) || float.TryParse(kvc_values[j], out out_float))
+                            {
+                                value_type = "number";
+                            }
+                            else
+                            {
+                                value_type = "string";
+                            }
+
+                            string comment = kvc_comments[j];
+                            comment = null == comment || "".Equals(comment) ? "" : " @" + comment;
+                            comment = comment.Replace('\n', ' ').Replace('\r', ' ');
+
+                            sb.AppendLine("---@field " + kvc_keys[j] + " " + "{ " + GetValuesAt(result.Tables[1], 2, 1, new List<string>())[0] + ": " + value_type + " }" + comment);
+                        }
+
+                        return;
+                    }
+
                     List<int> fms = GetFieldModifier(result.Tables[1], 0);
                     List<string> fts = GetFieldType(result.Tables[1], 1);
                     List<string> fns = GetFieldName(result.Tables[1], 2);
@@ -198,59 +251,9 @@ namespace xls2lua
                         {
                             string comment = comments[i];
                             comment = null == comment || "".Equals(comment) ? "" : " @" + comment;
+                            comment = comment.Replace('\n', ' ').Replace('\r', ' ');
+
                             sb.AppendLine("---@field " + fns[i] + " " + type_str + comment);
-                        }
-                        else
-                        {
-                            if ("atom" == fts[i])
-                            {
-                                List<string> keys = new List<string>();
-                                List<string> values = new List<string>();
-                                List<string> etc_comments = new List<string>();
-                                GetValuesAt(result.Tables[1], 3, 0, keys);
-                                GetValuesAt(result.Tables[1], 3, 1, values);
-                                GetValuesAt(result.Tables[1], 3, 2, etc_comments);
-
-                                int l = keys.Count;
-
-                                for (int j = 0; j < l; j++)
-                                {
-                                    if ("" == keys[j] || "" == values[j])
-                                    {
-                                        continue;
-                                    }
-
-                                    bool out_bool;
-                                    int out_int;
-                                    float out_float;
-
-                                    string value_type = "table";
-                                    if ("" == values[j] || values[j].Contains(','))
-                                    {
-                                        value_type = "table";
-                                    }
-                                    else if (bool.TryParse(values[j], out out_bool))
-                                    {
-                                        value_type = "boolean";
-                                    }
-                                    else if (int.TryParse(values[j], out out_int) || float.TryParse(values[j], out out_float))
-                                    {
-                                        value_type = "number";
-                                    }
-                                    else
-                                    {
-                                        value_type = "string";
-                                    }
-
-                                    string comment = etc_comments[j];
-                                    comment = null == comment || "".Equals(comment) ? "" : " @" + comment;
-                                    comment = comment.Replace('\n', ' ').Replace('\r', ' ');
-
-                                    sb.AppendLine("---@field " + keys[j] + " " + "{ " + GetValuesAt(result.Tables[1], 2, 1, new List<string>())[0] + ": " + value_type + " }" + comment);
-                                }
-
-                                continue;
-                            }
                         }
                     }
                 }
