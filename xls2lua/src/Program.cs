@@ -280,7 +280,12 @@ namespace xls2lua
         {
             DataRow row = table.Rows[r];
             var value = row.Field<object>(table.Columns[c]);
-            return value.ToString().Split('=')[1];
+            var parts = value.ToString().Split('=');
+            if (1 < parts.Length)
+            {
+                return parts[1];
+            }
+            return parts[0];
         }
 
         static List<int> GetFieldModifier(DataTable table, int r)
