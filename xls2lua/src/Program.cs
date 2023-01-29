@@ -21,33 +21,33 @@ namespace xls2lua
             public int count;
 
             [XmlElement("dataValidation")]
-            public DataValidation[] dataValidation;
+            public DataValidation[] dataValidation = null!;
         }
 
         [XmlRoot("dataValidation")]
         public class DataValidation : IComparable<DataValidation>
         {
             [XmlAttribute("prompt")]
-            public string prompt;
+            public string prompt = null!;
             [XmlAttribute("sqref")]
-            public string sqref;
+            public string sqref = null!;
 
             public int CompareTo([AllowNull] DataValidation other)
             {
-                return this.sqref[0] < other.sqref[0] ? -1 : 1;
+                return this.sqref[0] < other!.sqref[0] ? -1 : 1;
             }
         }
 
         [XmlElement("dataValidations")]
-        public DataValidations dataValidations;
+        public DataValidations dataValidations = null!;
     }
     class Program
     {
         static Dictionary<string, string> type_map = new Dictionary<string, string>();
         static bool args_help = false;
-        static string search_path = null;
+        static string search_path = null!;
         static string search_pattern = "*.xlsx";
-        static string file_out = null;
+        static string file_out = null!;
         static List<string> blacklist = new List<string>();
         static List<string> whitelist = new List<string>();
 
@@ -116,7 +116,7 @@ namespace xls2lua
                 using (StreamReader sr = new StreamReader(fs, Encoding.UTF8))
                 {
                     XmlSerializer xz = new XmlSerializer(typeof(Worksheet), "http://schemas.openxmlformats.org/spreadsheetml/2006/main");
-                    Worksheet dept = (Worksheet)xz.Deserialize(sr);
+                    Worksheet dept = (Worksheet)xz.Deserialize(sr)!;
 
                     comments = new string[64];
 
@@ -193,8 +193,8 @@ namespace xls2lua
                             continue;
                         }
 
-                        string type_str;
-                        if (type_map.TryGetValue(fts[i], out type_str))
+                        string type_str = null!;
+                        if (type_map.TryGetValue(fts[i], out type_str!))
                         {
                             string comment = comments[i];
                             comment = null == comment || "".Equals(comment) ? "" : " @" + comment;
@@ -270,7 +270,7 @@ namespace xls2lua
                 }
                 else
                 {
-                    values.Add(value.ToString());
+                    values.Add(value.ToString()!);
                 }
             }
 
@@ -281,7 +281,7 @@ namespace xls2lua
         {
             DataRow row = table.Rows[r];
             var value = row.Field<object>(table.Columns[c]);
-            var parts = value.ToString().Split('=');
+            var parts = value!.ToString()!.Split('=');
             if (1 < parts.Length)
             {
                 return parts[1];
@@ -307,9 +307,9 @@ namespace xls2lua
                 {
                     try
                     {
-                        result.Add(int.Parse(value.ToString()));
+                        result.Add(int.Parse(value.ToString()!));
                     }
-                    catch (System.Exception e)
+                    catch (System.Exception)
                     {
                         if (0 == r)
                         {
@@ -318,7 +318,7 @@ namespace xls2lua
                         else
                         {
                             Console.WriteLine("解析错误: " + table.TableName + ", 第" + r + "行, 第" + c + "列, 使用默认值");
-                            throw e;
+                            throw;
                         }
                     }
                 }
@@ -345,7 +345,7 @@ namespace xls2lua
                 {
                     try
                     {
-                        result.Add(value.ToString());
+                        result.Add(value.ToString()!);
                     }
                     catch (System.Exception)
                     {
@@ -376,7 +376,7 @@ namespace xls2lua
                 {
                     try
                     {
-                        result.Add(value.ToString());
+                        result.Add(value.ToString()!);
                     }
                     catch (System.Exception)
                     {
