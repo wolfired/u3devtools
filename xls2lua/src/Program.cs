@@ -61,7 +61,7 @@ namespace xls2lua
                 { "file_out=", "输出文件",  s => file_out = s },
                 { "blacklist=", "黑名单, 表名, 逗号分隔",  s => blacklist.AddRange(s.Split(",")) },
                 { "whitelist=", "白名单, 表名, 逗号分隔",  s => whitelist.AddRange(s.Split(",")) },
-                { "kvclist=", "键-值-注释格式配置, 目前只有杂项表(f_etc.lua)",  s => kvclist.AddRange(s.Split(",")) },
+                { "kvclist=", "键-值-注释格式配置, 目前只有杂项表(f_etc)",  s => kvclist.AddRange(s.Split(",")) },
             };
             List<string> extra;
             try
@@ -173,6 +173,8 @@ namespace xls2lua
 
                     if (kvclist.Contains(cfg_name))
                     {
+                        sb.AppendLine("\n---@class " + cfg_name + " @ " + Path.GetFileName(xls_file));
+
                         List<string> kvc_keys = new List<string>();
                         List<string> kvc_values = new List<string>();
                         List<string> kvc_comments = new List<string>();
@@ -217,7 +219,7 @@ namespace xls2lua
 
                             sb.AppendLine("---@field " + kvc_keys[j] + " " + "{ " + GetValuesAt(result.Tables[1], 2, 1, new List<string>())[0] + ": " + value_type + " }" + comment);
                         }
-
+                        
                         return;
                     }
 
