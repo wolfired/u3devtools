@@ -17,5 +17,7 @@
 应用程序, 按一定规则把xlsx配置表生成对应的lua类型定义, 这是一个项目限定的小工具
 
 ```bat
-dotnet publish xls2lua --configuration Release --self-contained --runtime win-x64 -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:PublishTrimmed=true
+rem 估计是用到了反射功能，不能使用以下参数
+rem  -p:PublishTrimmed=true
+dotnet publish xls2lua --configuration Release --self-contained --runtime win-x64 -p:PublishReadyToRun=true -p:PublishSingleFile=true
 ```
